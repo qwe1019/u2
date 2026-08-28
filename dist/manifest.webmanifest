@@ -1,0 +1,16 @@
+{
+  "name": "u2饮食日历",
+  "short_name": "u2饮食日历",
+  "start_url": "./figma-import.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#edf3ed",
+  "theme_color": "#edf3ed",
+  "icons": [
+    {
+      "src": "./apple-touch-icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
