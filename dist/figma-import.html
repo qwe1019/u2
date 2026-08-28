@@ -1,21 +1,1225 @@
 <!doctype html>
 <html lang="zh-CN">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#eef4ef" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#edf3ed" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <link rel="manifest" href="./manifest.webmanifest" />
     <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
     <link rel="icon" href="./apple-touch-icon.png" />
-    <link rel="stylesheet" href="./src/daily-bond.css" />
-    <title>中华美食地图 · 小程序 Demo</title>
+    <title>u2饮食日历 · 北京时间饮食日历</title>
+    <style>
+      :root {
+        --page: #edf3ed;
+        --surface: #f9fcf8;
+        --green: #4f9f72;
+        --deep: #2e694b;
+        --line: #e4ebe6;
+        --ink: #21312c;
+        --muted: #899991;
+        --warning: #e89a5b;
+        --shadow: 0 18px 36px rgba(40, 79, 56, 0.08);
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-width: 320px;
+        background: var(--page);
+        color: var(--ink);
+        font-family: "Microsoft YaHei", "Noto Sans SC", Arial, sans-serif;
+      }
+      button, input, select { font: inherit; }
+      button { cursor: pointer; }
+      .shell {
+        min-height: 100vh;
+        display: grid;
+        grid-template-columns: 226px minmax(0, 1fr);
+      }
+      .sidebar {
+        background: var(--surface);
+        border-right: 1px solid var(--line);
+        padding: 26px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+      .brand {
+        color: var(--deep);
+        font-size: 26px;
+        font-weight: 800;
+        padding: 6px 10px 10px;
+      }
+      .brand-sub {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 6px;
+        font-weight: 500;
+      }
+      .nav {
+        width: 100%;
+        border: 0;
+        background: transparent;
+        color: #60726a;
+        text-align: left;
+        padding: 13px 12px;
+        border-radius: 10px;
+      }
+      .nav.active, .nav:hover {
+        background: #e9f4e9;
+        color: var(--deep);
+        font-weight: 700;
+      }
+      .pet-card {
+        margin: 2px 0 2px;
+        padding: 14px 12px;
+        border: 1px solid #e3eee4;
+        border-radius: 12px;
+        background: #f5fbf4;
+        display: grid;
+        gap: 12px;
+      }
+      .pet-head {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      .pet-avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        background: #d6edd8;
+        color: var(--deep);
+        font-size: 21px;
+      }
+      .pet-head strong {
+        display: block;
+        font-size: 13px;
+        color: var(--deep);
+      }
+      .pet-head span {
+        display: block;
+        margin-top: 3px;
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.4;
+      }
+      .pet-field {
+        display: grid;
+        gap: 6px;
+      }
+      .pet-field label {
+        color: #6b7b73;
+        font-size: 11px;
+      }
+      .pet-field input {
+        width: 100%;
+        min-height: 36px;
+        border: 1px solid #d7e7d9;
+        border-radius: 8px;
+        padding: 0 10px;
+        background: white;
+        color: var(--ink);
+      }
+      .pet-field input:focus {
+        outline: none;
+        border-color: #9bc5a7;
+        box-shadow: 0 0 0 3px rgba(79, 159, 114, 0.12);
+      }
+      .pet-intimacy {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 10px;
+      }
+      .pet-intimacy span {
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .pet-intimacy strong {
+        font-size: 19px;
+        color: var(--deep);
+      }
+      .pet-intimacy em {
+        color: #76ae7c;
+        font-style: normal;
+        font-size: 11px;
+      }
+      .pet-meter {
+        height: 7px;
+        border-radius: 999px;
+        background: #e4efe5;
+        overflow: hidden;
+      }
+      .pet-meter span {
+        display: block;
+        height: 100%;
+        width: 0;
+        background: linear-gradient(90deg, #4f9f72, #76b982);
+        border-radius: inherit;
+        transition: width 0.35s ease;
+      }
+      .pet-note {
+        margin: 0;
+        color: #6f8277;
+        font-size: 11px;
+        line-height: 1.6;
+      }
+      .sidebar-note {
+        margin-top: auto;
+        padding: 14px 12px;
+        border: 1px solid #e3eee4;
+        border-radius: 12px;
+        background: #f5fbf4;
+        color: #638c70;
+        font-size: 12px;
+        line-height: 1.65;
+      }
+      .main {
+        padding: 34px 34px 42px;
+      }
+      .topbar {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 22px;
+      }
+      .eyebrow {
+        color: #9baa9f;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1.2px;
+      }
+      h1 {
+        margin: 8px 0 6px;
+        font-size: 31px;
+        line-height: 1.15;
+      }
+      .lead {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .clock {
+        min-width: 186px;
+        padding: 14px 16px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.62);
+        box-shadow: var(--shadow);
+        text-align: right;
+      }
+      .clock strong {
+        display: block;
+        color: var(--deep);
+        font-size: 18px;
+      }
+      .clock span {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.4fr) minmax(300px, 0.9fr);
+        gap: 20px;
+        align-items: start;
+      }
+      .stack { display: grid; gap: 18px; }
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 18px;
+        box-shadow: var(--shadow);
+      }
+      .card-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+      .card-head h2 {
+        margin: 0;
+        font-size: 18px;
+      }
+      .card-head p {
+        margin: 3px 0 0;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .date-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        padding: 10px 12px;
+        background: #fff;
+        color: #6b7b73;
+        font-size: 13px;
+      }
+      .meal-list {
+        display: grid;
+        gap: 12px;
+      }
+      .meal-row {
+        display: grid;
+        grid-template-columns: 90px minmax(0, 1fr) auto;
+        gap: 12px;
+        align-items: center;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 14px;
+        background: #fff;
+      }
+      .meal-row.empty { background: #fcfdfc; }
+      .meal-label {
+        display: grid;
+        gap: 4px;
+      }
+      .meal-label strong { font-size: 14px; }
+      .meal-label small { color: var(--muted); font-size: 11px; }
+      .meal-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--green);
+        display: inline-block;
+        margin-right: 6px;
+      }
+      .meal-dot.orange { background: var(--warning); }
+      .meal-dot.blue { background: #6e9da9; }
+      .meal-dot.gray { background: #ccd7cf; }
+      .meal-copy {
+        min-width: 0;
+      }
+      .meal-copy strong {
+        display: block;
+        font-size: 14px;
+        margin-bottom: 6px;
+      }
+      .meal-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        min-height: 22px;
+        padding: 0 8px;
+        border-radius: 5px;
+        background: #eff7ef;
+        color: #6d8d75;
+        font-size: 11px;
+      }
+      .meal-score {
+        display: grid;
+        justify-items: end;
+        gap: 5px;
+        min-width: 80px;
+      }
+      .meal-score b {
+        font-size: 19px;
+        color: var(--deep);
+      }
+      .meal-score span {
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .row-actions {
+        display: flex;
+        gap: 8px;
+        margin-left: 6px;
+      }
+      .ghost, .primary, .meal-type-btn, .tag-btn, .day-btn, .month-btn, .secondary {
+        border: 0;
+        border-radius: 8px;
+      }
+      .ghost {
+        background: transparent;
+        color: #7e8c85;
+        padding: 10px 12px;
+      }
+      .ghost:hover { color: var(--deep); background: #eff6ef; }
+      .primary {
+        background: var(--deep);
+        color: white;
+        padding: 0 16px;
+        min-height: 40px;
+        font-weight: 700;
+      }
+      .primary:hover { background: #24583d; }
+      .secondary {
+        background: #eef4ef;
+        color: #53715d;
+        padding: 0 14px;
+        min-height: 40px;
+        font-weight: 700;
+      }
+      .secondary:hover { background: #e2ece3; }
+      .form-grid {
+        display: grid;
+        gap: 14px;
+      }
+      .meal-type-picker, .tag-picker {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .meal-type-btn, .tag-btn {
+        min-height: 34px;
+        padding: 0 12px;
+        border: 1px solid var(--line);
+        background: white;
+        color: #7b8a82;
+      }
+      .meal-type-btn.active, .tag-btn.active {
+        border-color: #b7d7be;
+        background: #edf7ed;
+        color: #4c8a61;
+        font-weight: 700;
+      }
+      .input-row {
+        display: grid;
+        grid-template-columns: 160px minmax(0, 1fr);
+        gap: 10px;
+      }
+      .field {
+        display: grid;
+        gap: 6px;
+      }
+      .field label {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .field input, .field select {
+        width: 100%;
+        min-height: 40px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 0 12px;
+        background: white;
+        color: var(--ink);
+      }
+      .field input:focus, .field select:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(79, 159, 114, 0.14);
+        border-color: #9bc5a7;
+      }
+      .form-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .selected-card {
+        display: grid;
+        gap: 10px;
+      }
+      .selected-card .score {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0 14px;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+      }
+      .selected-card .score strong {
+        font-size: 30px;
+        color: var(--deep);
+      }
+      .score-note {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .calendar-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 14px;
+      }
+      .calendar-toolbar h3 {
+        margin: 0;
+        font-size: 18px;
+      }
+      .calendar-tools {
+        display: flex;
+        gap: 8px;
+      }
+      .month-btn {
+        min-height: 34px;
+        padding: 0 11px;
+        background: #eef4ef;
+        color: #54725f;
+      }
+      .month-btn:hover { background: #e2ece3; }
+      .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 8px;
+      }
+      .weekday {
+        color: #a1ada5;
+        font-size: 11px;
+        text-align: center;
+        padding-bottom: 3px;
+      }
+      .day-btn {
+        min-height: 62px;
+        padding: 8px;
+        border: 1px solid transparent;
+        background: #f1f6f1;
+        color: #617069;
+        text-align: left;
+        display: grid;
+        align-content: space-between;
+        gap: 5px;
+      }
+      .day-btn .day-num {
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .day-btn .day-meta {
+        font-size: 10px;
+        color: #87968d;
+      }
+      .day-btn.empty {
+        color: #92a099;
+        background: #f7fbf7;
+      }
+      .day-btn.good {
+        background: #e2f0e3;
+        color: #4f8b5d;
+      }
+      .day-btn.today {
+        border-color: var(--green);
+        box-shadow: inset 0 0 0 1px var(--green);
+        font-weight: 700;
+      }
+      .day-btn.selected {
+        outline: 2px solid rgba(79, 159, 114, 0.45);
+      }
+      .summary-grid {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(3, 1fr);
+        margin-top: 12px;
+      }
+      .mini-stat {
+        border-top: 1px solid var(--line);
+        padding-top: 10px;
+      }
+      .mini-stat span {
+        display: block;
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .mini-stat strong {
+        display: block;
+        margin-top: 4px;
+        color: #476d54;
+        font-size: 18px;
+      }
+      .toast {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-10px);
+        opacity: 0;
+        pointer-events: none;
+        padding: 11px 15px;
+        border: 1px solid #cce4d0;
+        border-radius: 8px;
+        background: white;
+        color: #4b875c;
+        box-shadow: 0 10px 30px rgba(44, 88, 55, 0.14);
+        transition: 0.2s ease;
+        z-index: 20;
+      }
+      .toast.show {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+      }
+      .helper {
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.6;
+      }
+      @media (max-width: 1120px) {
+        .shell { grid-template-columns: 188px minmax(0, 1fr); }
+        .main { padding: 26px 20px 34px; }
+        .layout { grid-template-columns: 1fr; }
+      }
+      @media (max-width: 720px) {
+        .shell { display: block; }
+        .sidebar {
+          padding: 16px 14px;
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+        }
+        .brand { font-size: 22px; padding: 0; }
+        .pet-card { margin: 0; }
+        .main { padding: 16px 14px 26px; }
+        .topbar { display: block; }
+        .clock { margin-top: 14px; text-align: left; min-width: 0; }
+        .meal-row { grid-template-columns: 1fr; }
+        .meal-score { justify-items: start; }
+        .row-actions { margin-left: 0; }
+        .input-row { grid-template-columns: 1fr; }
+        .summary-grid { grid-template-columns: 1fr; }
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
-    <script src="./src/food-data.js"></script>
-    <script src="./src/food-en.js"></script>
-    <script src="./src/app.js"></script>
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="brand">
+          u2饮食日历
+          <div class="brand-sub">北京时间饮食日历 · 可编辑四餐</div>
+        </div>
+        <section class="pet-card">
+          <div class="pet-head">
+            <div class="pet-avatar">^_^</div>
+            <div>
+              <strong id="pet-display-name">小人</strong>
+              <span>一起看亲密度变化</span>
+            </div>
+          </div>
+          <div class="pet-field">
+            <label for="pet-name">小人名字</label>
+            <input id="pet-name" type="text" placeholder="输入一个名字" />
+          </div>
+          <div class="pet-intimacy">
+            <div>
+              <span>亲密度</span>
+              <strong id="pet-bond-value">--</strong>
+            </div>
+            <em id="pet-bond-level">--</em>
+          </div>
+          <div class="pet-meter"><span id="pet-bond-bar"></span></div>
+          <p class="pet-note" id="pet-note">当前日期的饮食会影响你和小人的亲密度。</p>
+        </section>
+        <button class="nav active" type="button">今日记录</button>
+        <button class="nav" type="button" id="jump-calendar">饮食日历</button>
+        <button class="nav" type="button" id="jump-today">回到今天</button>
+        <div class="sidebar-note">
+          所有时间都按北京时间记录。<br />
+          你可以切换日期、编辑早午晚餐和加餐，日历会跟着变化。
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div>
+            <div class="eyebrow">BEIJING TIME · ASIA/SHANGHAI</div>
+            <h1>u2饮食日历</h1>
+            <p class="lead" id="selected-label">正在读取北京时间</p>
+          </div>
+          <div class="clock">
+            <strong id="clock-time">--:--:--</strong>
+            <span id="clock-date">--</span>
+          </div>
+        </header>
+
+        <div class="layout">
+          <section class="stack">
+            <section class="card">
+              <div class="card-head">
+                <div>
+                  <h2>当天饮食</h2>
+                  <p>可直接编辑早餐、午餐、晚餐和加餐</p>
+                </div>
+                <div class="date-chip" id="date-chip">--</div>
+              </div>
+              <div class="meal-list" id="meal-list"></div>
+            </section>
+
+            <section class="card">
+              <div class="card-head">
+                <div>
+                  <h2 id="form-title">添加饮食</h2>
+                  <p id="form-subtitle">编辑后会同步到当前日期</p>
+                </div>
+              </div>
+              <div class="form-grid">
+                <div class="meal-type-picker" id="meal-type-picker"></div>
+                <div class="input-row">
+                  <div class="field">
+                    <label for="meal-time">北京时间</label>
+                    <input id="meal-time" type="time" />
+                  </div>
+                  <div class="field">
+                    <label for="meal-name">食物名称</label>
+                    <input id="meal-name" type="text" placeholder="例如：番茄鸡蛋面、苹果和无糖酸奶" />
+                  </div>
+                </div>
+                <div class="field">
+                  <label>快速标签</label>
+                  <div class="tag-picker" id="tag-picker"></div>
+                </div>
+                <div class="form-actions">
+                  <button class="primary" type="button" id="save-meal">保存这顿</button>
+                  <button class="secondary" type="button" id="reset-form">清空</button>
+                </div>
+                <p class="helper">保存时会按北京时间写入对应日期；切换日历日期后也可以继续修改当天的四餐。</p>
+              </div>
+            </section>
+          </section>
+
+          <aside class="stack">
+            <section class="card selected-card">
+              <div class="card-head">
+                <div>
+                  <h2>所选日期小结</h2>
+                  <p id="summary-subtitle">--</p>
+                </div>
+              </div>
+              <div class="score">
+                <div>
+                  <strong id="day-score">--</strong>
+                  <div class="score-note" id="day-note">--</div>
+                </div>
+                <div class="score-note" id="day-bond">--</div>
+              </div>
+              <div class="summary-grid">
+                <div class="mini-stat">
+                  <span>蔬菜水果</span>
+                  <strong id="veg-count">0</strong>
+                </div>
+                <div class="mini-stat">
+                  <span>蛋白质</span>
+                  <strong id="protein-count">0</strong>
+                </div>
+                <div class="mini-stat">
+                  <span>记录完整度</span>
+                  <strong id="coverage-count">0%</strong>
+                </div>
+              </div>
+            </section>
+
+            <section class="card" id="calendar-card">
+              <div class="calendar-toolbar">
+                <div>
+                  <h3 id="month-label">--</h3>
+                  <p class="helper" style="margin: 4px 0 0;">点击日期可以切换查看和修改</p>
+                </div>
+                <div class="calendar-tools">
+                  <button class="month-btn" type="button" id="prev-month">上月</button>
+                  <button class="month-btn" type="button" id="today-month">今天</button>
+                  <button class="month-btn" type="button" id="next-month">下月</button>
+                </div>
+              </div>
+              <div class="calendar-grid" id="calendar-grid"></div>
+            </section>
+          </aside>
+        </div>
+      </main>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js').catch(() => {});
+        });
+      }
+
+      const mealOrder = ['早餐', '午餐', '晚餐', '加餐'];
+      const tagOptions = ['高纤维', '蛋白质', '蔬菜', '水果', '低糖', '高碳水', '油炸', '甜食'];
+      const storageKey = 'haohaochifan.beijing-diet.v3';
+      const morning = '07:30';
+      const noon = '12:15';
+      const evening = '18:45';
+      const snack = '15:30';
+
+      const templates = {
+        '早餐': [
+          { name: '燕麦酸奶碗', tags: ['高纤维', '蛋白质'] },
+          { name: '全麦吐司+鸡蛋', tags: ['蛋白质', '高纤维'] },
+          { name: '豆浆和香蕉', tags: ['水果', '蛋白质'] },
+        ],
+        '午餐': [
+          { name: '照烧鸡腿饭', tags: ['蛋白质', '蔬菜'] },
+          { name: '番茄牛肉面', tags: ['蛋白质', '高碳水'] },
+          { name: '清蒸鱼配米饭', tags: ['蛋白质', '蔬菜'] },
+        ],
+        '晚餐': [
+          { name: '奶油意面', tags: ['高碳水', '甜食'] },
+          { name: '鸡胸沙拉', tags: ['蛋白质', '蔬菜'] },
+          { name: '番茄豆腐汤', tags: ['蔬菜', '低糖'] },
+        ],
+        '加餐': [
+          { name: '苹果和无糖酸奶', tags: ['水果', '蛋白质'] },
+          { name: '坚果一小把', tags: ['蛋白质', '低糖'] },
+          { name: '奶茶和薯片', tags: ['甜食', '油炸'] },
+        ],
+      };
+
+      const todayKey = beijingDateKey(new Date());
+      const state = loadState();
+      let petName = state.petName || '小人';
+      let selectedDate = todayKey;
+      let calendarMonth = todayKey.slice(0, 7);
+      let draft = createDraft('加餐');
+      let toastTimer;
+      let clockTimer;
+
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(storageKey);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (!parsed.records) parsed.records = seedCurrentMonth(todayKey.slice(0, 7));
+            if (!parsed.petName) parsed.petName = '小人';
+            return parsed;
+          }
+        } catch {}
+        return { records: seedCurrentMonth(todayKey.slice(0, 7)), petName: '小人' };
+      }
+
+      function saveState() {
+        localStorage.setItem(storageKey, JSON.stringify(state));
+      }
+
+      function setPetName(value) {
+        petName = value.trim() || '小人';
+        state.petName = petName;
+        saveState();
+        document.querySelector('#pet-display-name').textContent = petName;
+        document.querySelector('#pet-note').textContent = `当前你和「${petName}」的亲密度，会跟着北京时区的饮食记录一起变化。`;
+      }
+
+      function getBeijingParts(date = new Date()) {
+        const parts = new Intl.DateTimeFormat('zh-CN', {
+          timeZone: 'Asia/Shanghai',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          weekday: 'short',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false,
+        }).formatToParts(date);
+        return Object.fromEntries(parts.filter((part) => part.type !== 'literal').map((part) => [part.type, part.value]));
+      }
+
+      function beijingDateKey(date = new Date()) {
+        const { year, month, day } = getBeijingParts(date);
+        return `${year}-${month}-${day}`;
+      }
+
+      function beijingTime(date = new Date()) {
+        const { hour, minute } = getBeijingParts(date);
+        return `${hour}:${minute}`;
+      }
+
+      function beijingClock(date = new Date()) {
+        const { year, month, day, weekday, hour, minute, second } = getBeijingParts(date);
+        return {
+          date: `${year}年${Number(month)}月${Number(day)}日 ${weekday}`,
+          time: `${hour}:${minute}:${second}`,
+        };
+      }
+
+      function keyToDate(key) {
+        const [year, month, day] = key.split('-').map(Number);
+        return new Date(Date.UTC(year, month - 1, day, 12));
+      }
+
+      function monthTitle(key) {
+        const [year, month] = key.split('-').map(Number);
+        return `${year}年${month}月`;
+      }
+
+      function addMonth(key, delta) {
+        const [year, month] = key.split('-').map(Number);
+        const next = new Date(Date.UTC(year, month - 1 + delta, 1, 12));
+        return `${next.getUTCFullYear()}-${String(next.getUTCMonth() + 1).padStart(2, '0')}`;
+      }
+
+      function monthMeta(key) {
+        const [year, month] = key.split('-').map(Number);
+        const daysInMonth = new Date(Date.UTC(year, month, 0, 12)).getUTCDate();
+        const firstWeekday = (new Date(Date.UTC(year, month - 1, 1, 12)).getUTCDay() + 6) % 7;
+        return { year, month, daysInMonth, firstWeekday };
+      }
+
+      function formatSelectedLabel(key) {
+        const date = keyToDate(key);
+        const weekday = new Intl.DateTimeFormat('zh-CN', { timeZone: 'Asia/Shanghai', weekday: 'short' }).format(date);
+        const [year, month, day] = key.split('-').map(Number);
+        return `${year}年${month}月${day}日 ${weekday}`;
+      }
+
+      function createDraft(type, meal = null) {
+        return {
+          type,
+          time: meal?.time || beijingTime(),
+          name: meal?.name || '',
+          tags: meal?.tags ? [...meal.tags] : [],
+        };
+      }
+
+      function mealScore(name, tags) {
+        const text = `${name} ${tags.join(' ')}`;
+        const good = ['沙拉', '蔬菜', '鸡胸', '鸡腿', '鱼', '虾', '燕麦', '酸奶', '水果', '豆腐', '全麦', '坚果', '蛋'];
+        const bad = ['炸', '奶油', '薯片', '可乐', '奶茶', '甜甜圈', '蛋糕', '辣条', '烧烤'];
+        const goodHits = good.filter((word) => text.includes(word)).length;
+        const badHits = bad.filter((word) => text.includes(word)).length;
+        const tagGood = tags.filter((tag) => ['高纤维', '蛋白质', '蔬菜', '水果', '低糖'].includes(tag)).length;
+        const tagBad = tags.filter((tag) => ['高碳水', '油炸', '甜食'].includes(tag)).length;
+        return Math.max(35, Math.min(98, 68 + goodHits * 8 + tagGood * 5 - badHits * 14 - tagBad * 7));
+      }
+
+      function toneFor(score) {
+        return score >= 80 ? 'green' : score >= 65 ? 'blue' : 'orange';
+      }
+
+      function labelFor(score) {
+        return score >= 85 ? '非常健康' : score >= 75 ? '基本均衡' : score >= 60 ? '需要调整' : '偏高油高糖';
+      }
+
+      function seedCurrentMonth(monthKey) {
+        const records = {};
+        const { daysInMonth } = monthMeta(monthKey);
+        for (let day = 1; day <= daysInMonth; day += 1) {
+          const key = `${monthKey}-${String(day).padStart(2, '0')}`;
+          records[key] = {};
+          mealOrder.forEach((type, index) => {
+            const bucket = templates[type];
+            const template = bucket[(day + index) % bucket.length];
+            const score = mealScore(template.name, template.tags);
+            const time = [morning, noon, evening, snack][index];
+            records[key][type] = {
+              id: `${key}-${type}`,
+              type,
+              time,
+              name: template.name,
+              tags: [...template.tags],
+              score,
+              tone: toneFor(score),
+            };
+          });
+        }
+        return records;
+      }
+
+      function ensureDay(key) {
+        if (!state.records[key]) state.records[key] = {};
+        return state.records[key];
+      }
+
+      function getMeal(key, type) {
+        return ensureDay(key)[type] || null;
+      }
+
+      function upsertMeal(key, meal) {
+        ensureDay(key)[meal.type] = meal;
+        saveState();
+      }
+
+      function deleteMeal(key, type) {
+        if (state.records[key]) {
+          delete state.records[key][type];
+          saveState();
+        }
+      }
+
+      function dayStats(key) {
+        const meals = mealOrder.map((type) => getMeal(key, type)).filter(Boolean);
+        const avg = meals.length ? Math.round(meals.reduce((sum, meal) => sum + meal.score, 0) / meals.length) : 0;
+        const veg = meals.filter((meal) => meal.tags.some((tag) => ['蔬菜', '水果'].includes(tag))).length;
+        const protein = meals.filter((meal) => meal.tags.includes('蛋白质')).length;
+        return {
+          meals,
+          avg,
+          veg,
+          protein,
+          filled: meals.length,
+          bond: Math.max(12, Math.min(100, 36 + Math.round((avg - 50) * 0.72))),
+        };
+      }
+
+      function startEditing(type, meal = null) {
+        draft = createDraft(type, meal);
+        render();
+        bindInputValues();
+      }
+
+      function resetDraft() {
+        draft = createDraft(draft.type);
+        render();
+        bindInputValues();
+      }
+
+      function setSelectedDate(key) {
+        selectedDate = key;
+        calendarMonth = key.slice(0, 7);
+        const existing = mealOrder.map((type) => getMeal(key, type)).find(Boolean);
+        draft = createDraft(existing?.type || draft.type || '加餐', existing);
+        render();
+        bindInputValues();
+      }
+
+      function showToast(message) {
+        const node = document.querySelector('#toast');
+        node.textContent = message;
+        node.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => node.classList.remove('show'), 2200);
+      }
+
+      function renderMeals() {
+        const rows = mealOrder.map((type) => {
+          const meal = getMeal(selectedDate, type);
+          if (!meal) {
+            return `
+              <div class="meal-row empty">
+                <div class="meal-label">
+                  <strong><span class="meal-dot gray"></span>${type}</strong>
+                  <small>北京时间 ${type} 还没有记录</small>
+                </div>
+                <div class="meal-copy">
+                  <strong>空状态</strong>
+                  <div class="helper">点击“添加”后就能补上这顿</div>
+                </div>
+                <div class="row-actions">
+                  <button class="ghost" type="button" data-add="${type}">添加</button>
+                </div>
+              </div>
+            `;
+          }
+          return `
+            <div class="meal-row">
+              <div class="meal-label">
+                <strong><span class="meal-dot ${meal.tone}"></span>${type}</strong>
+                <small>北京时间 ${meal.time}</small>
+              </div>
+              <div class="meal-copy">
+                <strong>${meal.name}</strong>
+                <div class="meal-tags">${meal.tags.map((tag) => `<span class="tag">${tag}</span>`).join('')}</div>
+              </div>
+              <div class="meal-score">
+                <b>${meal.score}</b>
+                <span>${labelFor(meal.score)}</span>
+                <div class="row-actions">
+                  <button class="ghost" type="button" data-edit="${type}">编辑</button>
+                  <button class="ghost" type="button" data-delete="${type}">删除</button>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+        document.querySelector('#meal-list').innerHTML = rows.join('');
+      }
+
+      function renderForm() {
+        document.querySelector('#form-title').textContent = `${draft.type}编辑`;
+        document.querySelector('#form-subtitle').textContent = `${formatSelectedLabel(selectedDate)} · 北京时间写入`;
+        document.querySelector('#meal-time').value = draft.time;
+        document.querySelector('#meal-name').value = draft.name;
+        document.querySelector('#save-meal').textContent = getMeal(selectedDate, draft.type) ? '保存修改' : '添加饮食';
+        document.querySelector('#meal-type-picker').innerHTML = mealOrder.map((type) => `
+          <button class="meal-type-btn ${draft.type === type ? 'active' : ''}" type="button" data-type="${type}">${type}</button>
+        `).join('');
+        document.querySelector('#tag-picker').innerHTML = tagOptions.map((tag) => `
+          <button class="tag-btn ${draft.tags.includes(tag) ? 'active' : ''}" type="button" data-tag="${tag}">${tag}</button>
+        `).join('');
+      }
+
+      function renderSummary() {
+        const stats = dayStats(selectedDate);
+        document.querySelector('#selected-label').textContent = `${formatSelectedLabel(selectedDate)} · 所有时间按北京时间`;
+        document.querySelector('#date-chip').textContent = `北京时间 ${selectedDate}`;
+        document.querySelector('#summary-subtitle').textContent = `${formatSelectedLabel(selectedDate)} · 共 ${stats.filled} 餐`;
+        document.querySelector('#day-score').textContent = stats.avg || '--';
+        document.querySelector('#day-note').textContent = stats.avg ? labelFor(stats.avg) : '还没有记录';
+        document.querySelector('#day-bond').textContent = stats.avg ? `今日亲密度 ${stats.bond}` : '亲密度会随着记录变化';
+        document.querySelector('#veg-count').textContent = stats.veg;
+        document.querySelector('#protein-count').textContent = stats.protein;
+        document.querySelector('#coverage-count').textContent = `${Math.round((stats.filled / mealOrder.length) * 100)}%`;
+        document.querySelector('#pet-bond-value').textContent = stats.bond;
+        document.querySelector('#pet-bond-level').textContent = stats.avg ? `Lv.${Math.max(1, Math.min(5, Math.floor(stats.bond / 20) + 1))}` : 'Lv.1';
+        document.querySelector('#pet-bond-bar').style.width = `${stats.bond}%`;
+        document.querySelector('#pet-note').textContent = stats.avg
+          ? `当前你和「${petName}」的亲密度会随着北京时区的饮食记录变化。`
+          : `先记录几顿，北京时间会开始帮你和「${petName}」积累亲密度。`;
+      }
+
+      function renderCalendar() {
+        const { daysInMonth, firstWeekday } = monthMeta(calendarMonth);
+        const cells = [];
+        ['一', '二', '三', '四', '五', '六', '日'].forEach((weekday) => cells.push(`<div class="weekday">${weekday}</div>`));
+        for (let i = 0; i < firstWeekday; i += 1) cells.push('<div></div>');
+        for (let day = 1; day <= daysInMonth; day += 1) {
+          const key = `${calendarMonth}-${String(day).padStart(2, '0')}`;
+          const stats = dayStats(key);
+          const isToday = key === todayKey;
+          const isSelected = key === selectedDate;
+          const filled = stats.filled > 0;
+          cells.push(`
+            <button class="day-btn ${filled ? 'good' : 'empty'} ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}" type="button" data-day="${key}">
+              <span class="day-num">${day}</span>
+              <span class="day-meta">${filled ? `${stats.filled} 餐 · ${stats.avg || '--'}分` : '空白日'}</span>
+            </button>
+          `);
+        }
+        document.querySelector('#month-label').textContent = monthTitle(calendarMonth);
+        document.querySelector('#calendar-grid').innerHTML = cells.join('');
+      }
+
+      function renderClock() {
+        const now = beijingClock(new Date());
+        document.querySelector('#clock-time').textContent = now.time;
+        document.querySelector('#clock-date').textContent = now.date;
+      }
+
+      function bindInputValues() {
+        document.querySelector('#meal-time').value = draft.time;
+        document.querySelector('#meal-name').value = draft.name;
+      }
+
+      function render() {
+        renderClock();
+        renderMeals();
+        renderForm();
+        renderSummary();
+        renderCalendar();
+      }
+
+      function handleSave() {
+        const name = document.querySelector('#meal-name').value.trim();
+        const time = document.querySelector('#meal-time').value || beijingTime();
+        const type = draft.type;
+        if (!name) {
+          showToast('先填写食物名称');
+          return;
+        }
+        const tags = draft.tags.length ? [...draft.tags] : ['均衡'];
+        const score = mealScore(name, tags);
+        upsertMeal(selectedDate, {
+          id: `${selectedDate}-${type}`,
+          type,
+          time,
+          name,
+          tags,
+          score,
+          tone: toneFor(score),
+        });
+        draft = createDraft(type);
+        render();
+        bindInputValues();
+        showToast(`${type}已保存到北京时间 ${selectedDate}`);
+      }
+
+      function updateClockEverySecond() {
+        renderClock();
+      }
+
+      function seedFormFromCurrentSelection() {
+        const meal = getMeal(selectedDate, draft.type);
+        draft = createDraft(draft.type, meal);
+        render();
+        bindInputValues();
+      }
+
+      document.querySelector('#save-meal').addEventListener('click', handleSave);
+      document.querySelector('#pet-name').addEventListener('input', (event) => {
+        setPetName(event.target.value);
+      });
+      document.querySelector('#reset-form').addEventListener('click', () => {
+        resetDraft();
+        showToast('表单已清空');
+      });
+      document.querySelector('#meal-time').addEventListener('input', (event) => { draft.time = event.target.value; });
+      document.querySelector('#meal-name').addEventListener('input', (event) => { draft.name = event.target.value; });
+      document.querySelector('#meal-type-picker').addEventListener('click', (event) => {
+        const button = event.target.closest('[data-type]');
+        if (!button) return;
+        const meal = getMeal(selectedDate, button.dataset.type);
+        draft = createDraft(button.dataset.type, meal);
+        renderForm();
+        bindInputValues();
+      });
+      document.querySelector('#tag-picker').addEventListener('click', (event) => {
+        const button = event.target.closest('[data-tag]');
+        if (!button) return;
+        const tag = button.dataset.tag;
+        draft.tags = draft.tags.includes(tag)
+          ? draft.tags.filter((item) => item !== tag)
+          : [...draft.tags, tag];
+        renderForm();
+        bindInputValues();
+      });
+      document.querySelector('#meal-list').addEventListener('click', (event) => {
+        const edit = event.target.closest('[data-edit]');
+        const add = event.target.closest('[data-add]');
+        const del = event.target.closest('[data-delete]');
+        if (edit) {
+          startEditing(edit.dataset.edit, getMeal(selectedDate, edit.dataset.edit));
+          showToast(`开始编辑${edit.dataset.edit}`);
+        }
+        if (add) {
+          startEditing(add.dataset.add, null);
+          document.querySelector('#meal-name').focus();
+        }
+        if (del) {
+          deleteMeal(selectedDate, del.dataset.delete);
+          seedFormFromCurrentSelection();
+          showToast(`${del.dataset.delete}已删除`);
+        }
+      });
+      document.querySelector('#calendar-grid').addEventListener('click', (event) => {
+        const button = event.target.closest('[data-day]');
+        if (!button) return;
+        selectedDate = button.dataset.day;
+        calendarMonth = selectedDate.slice(0, 7);
+        const existing = mealOrder.map((type) => getMeal(selectedDate, type)).find(Boolean);
+        draft = createDraft(existing?.type || draft.type || '加餐', existing);
+        render();
+        bindInputValues();
+        showToast(`切换到 ${formatSelectedLabel(selectedDate)}`);
+      });
+      document.querySelector('#prev-month').addEventListener('click', () => {
+        calendarMonth = addMonth(calendarMonth, -1);
+        render();
+      });
+      document.querySelector('#next-month').addEventListener('click', () => {
+        calendarMonth = addMonth(calendarMonth, 1);
+        render();
+      });
+      document.querySelector('#today-month').addEventListener('click', () => {
+        selectedDate = todayKey;
+        calendarMonth = todayKey.slice(0, 7);
+        seedFormFromCurrentSelection();
+        showToast('回到今天');
+      });
+      document.querySelector('#jump-today').addEventListener('click', () => {
+        selectedDate = todayKey;
+        calendarMonth = todayKey.slice(0, 7);
+        seedFormFromCurrentSelection();
+        showToast('已切换到今天');
+      });
+      document.querySelector('#jump-calendar').addEventListener('click', () => {
+        document.querySelector('#calendar-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+
+      render();
+      bindInputValues();
+      document.querySelector('#pet-name').value = petName;
+      document.querySelector('#pet-display-name').textContent = petName;
+      document.querySelector('#pet-note').textContent = `当前你和「${petName}」的亲密度会随着北京时区的饮食记录变化。`;
+      renderClock();
+      clearInterval(clockTimer);
+      clockTimer = setInterval(updateClockEverySecond, 1000);
+    </script>
   </body>
 </html>

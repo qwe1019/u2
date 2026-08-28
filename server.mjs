@@ -41,7 +41,7 @@ createServer(async (request, response) => {
       if (info.family === 'IPv4' && !info.internal) addresses.push(info.address);
     }
   }
-  console.log(`中华美食地图 running at http://127.0.0.1:${port}`);
+  console.log(`u2饮食日历 running at http://127.0.0.1:${port}`);
   for (const address of addresses) {
     console.log(`LAN: http://${address}:${port}`);
   }
