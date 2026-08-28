@@ -1,11 +1,11 @@
 {
-  "name": "u2饮食日历",
-  "short_name": "u2饮食日历",
+  "name": "中华美食地图",
+  "short_name": "美食地图",
   "start_url": "./figma-import.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#edf3ed",
-  "theme_color": "#edf3ed",
+  "background_color": "#eef4ef",
+  "theme_color": "#2f7d55",
   "icons": [
     {
       "src": "./apple-touch-icon.png",

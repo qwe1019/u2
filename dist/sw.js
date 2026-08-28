@@ -1,10 +1,14 @@
-const CACHE_NAME = 'u2-diet-calendar-pwa-v2';
+const CACHE_NAME = 'china-food-map-pwa-v4';
 const BASE_URL = new URL('./', self.location.href);
 const appShell = new URL('figma-import.html', BASE_URL).toString();
 const ASSETS = [
   appShell,
   new URL('manifest.webmanifest', BASE_URL).toString(),
   new URL('apple-touch-icon.png', BASE_URL).toString(),
+  new URL('src/food-data.js', BASE_URL).toString(),
+  new URL('src/food-en.js', BASE_URL).toString(),
+  new URL('src/app.js', BASE_URL).toString(),
+  new URL('src/daily-bond.css', BASE_URL).toString(),
 ];
 
 self.addEventListener('install', (event) => {
